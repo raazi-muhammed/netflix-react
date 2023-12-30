@@ -19,6 +19,17 @@ export default class MoviesService {
             return null;
         }
     }
+    async getPopular(): Promise<MovieDBResponse | null> {
+        try {
+            const response = await this.httpClient.get(
+                `https://api.themoviedb.org/3/tv/popular?language=en-US&`
+            );
+            return response.data as MovieDBResponse;
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    }
     async getMovies() {
         //        `/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
         try {
