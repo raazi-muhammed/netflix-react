@@ -7,20 +7,38 @@ import MainPoster from "./components/MainPoster";
 import SingleMedia from "./components/SingleMedia";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
+import Heading from "./components/Heading";
+import YouTube from "react-youtube";
 
 function App() {
     const [trending, setTrending] = useState<ResultMediaType[]>([]);
     const [popular, setPopular] = useState<ResultMediaType[]>([]);
+    const [mainPreviewId, setMainPreviewId] = useState<number | null>(91363);
     const [singlePreview, setSinglePreview] = useState<ResultMediaType | null>(
         null
     );
+
+    useEffect(() => {
+        const moviesService: any = new MoviesService(APIClient);
+        moviesService
+            .getSingleMediaDetails(mainPreviewId)
+            .then((data: ResultMediaType) => {
+                setSinglePreview(data);
+                console.log(data);
+            });
+
+        moviesService.getTrailer(mainPreviewId).then((da: any) => {
+            console.log(da);
+        });
+    }, [mainPreviewId]);
+
     useEffect(() => {
         const moviesService: any = new MoviesService(APIClient);
         moviesService.getTrending().then((li: MovieDBResponse) => {
-            console.log(li);
             setTrending(li.results);
-            setSinglePreview(li.results[8]);
+            setMainPreviewId(li.results[0].id);
         });
+
         moviesService.getPopular().then((li: MovieDBResponse) => {
             console.log(li);
             setPopular(li.results);
@@ -28,29 +46,33 @@ function App() {
     }, []);
 
     return (
-        <main className="w-screen ">
+        <div className="w-screen ">
             <NavBar />
-            {singlePreview && <MainPoster media={singlePreview} />}
-            <p className="font-semibold text-2xl text-white opacity-100 z-40 ps-4 pt-4 ">
-                Trending
-            </p>
+            <main>
+                {singlePreview && <MainPoster media={singlePreview} />}
+                <Heading>Trending</Heading>
+                <section className="flex p-3 w-screen h-96 overflow-auto align-middle -my-16">
+                    {trending.map((media) => (
+                        <SingleMedia
+                            setMainPreviewId={setMainPreviewId}
+                            media={media}
+                        />
+                    ))}
+                </section>
 
-            <section className="flex p-3 w-screen">
-                {trending.map((media) => (
-                    <SingleMedia media={media} />
-                ))}
-            </section>
+                <Heading>Popular</Heading>
 
-            <p className="font-semibold text-2xl text-white opacity-100 z-40 ps-4 pt-4 ">
-                Popular
-            </p>
-            <section className="flex p-3 w-screen">
-                {popular.map((media) => (
-                    <SingleMedia media={media} />
-                ))}
-            </section>
+                <section className="flex p-3 w-screen h-96 overflow-auto align-middle -my-16">
+                    {popular.map((media) => (
+                        <SingleMedia
+                            setMainPreviewId={setMainPreviewId}
+                            media={media}
+                        />
+                    ))}
+                </section>
+            </main>
             <Footer />
-        </main>
+        </div>
     );
 }
 
